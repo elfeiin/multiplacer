@@ -12,6 +12,9 @@ multiplacer.activate = function(player, material, pointed_thing, mode)
 	if minetest.get_item_group(material, "liquid") > 0 then
 		return nil;
 	end
+	-- if minetest.get_draw_type(material, "liquid") then
+	-- 	return nil;
+	-- end
 	if( player == nil or pointed_thing == nil) then
 		return nil;
 	end
@@ -49,7 +52,7 @@ end
 minetest.register_tool("multiplacer:multiplacer", {
 	description = "Placer Tool",
 	inventory_image = "multiplacer_multiplacer.png",
-	liquids_pointable = true
+	liquids_pointable = true,
 	tool_capabilities = {
 		full_punch_interval = 0.9,
 		max_drop_level = 0,
