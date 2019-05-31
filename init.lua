@@ -1,3 +1,5 @@
+multiplacer = {}
+
 local add_3dx2 = function(a,b)
 	return {x=a.x+b.x,y=a.y+b.y,z=a.z+b.z}
 end
@@ -6,32 +8,33 @@ local mul_3dx2 = function(a,b)
 	return {x=a.x*b.x,y=a.y*b.y,z=a.z*b.z}
 end
 
-local activate = function(player_name, material)
-	local has, missing = minetest.check_player_privs(player_name, {interact = true})
-	if not has then
-	    return
+multiplacer.activate = function(player, material, pointed_thing)
+	if( player == nil or pointed_thing == nil) then
+		return nil;
 	end
-	local player = minetest.get_player_by_name(player_name)
+	if( pointed_thing.type ~= "node" ) then
+		return nil;
+	end
+	local start = minetest.get_pointed_thing_position( pointed_thing, above );
 	local inv = player:get_inventory()
-	local stack = inv:get_stack("main", 0)
+	local stack = inv:get_stack("main", 1)
 	local material = material or (stack:is_known() and stack:get_name())
 	if not material then
 		return
 	end
 	local x = stack:get_count()
-	local y = inv:get_stack("main", 1):get_count()
-	local z = inv:get_stack("main", 2):get_count()
-	local yaw = player:get_look_horizontal()
-	local dir = {x=math.sin(yaw), y=0, z=math.cos(yaw)}
-	local start = add_3dx2(player:get_pos(), dir)
-	dir.y = 1
+	local y = inv:get_stack("main", 2):get_count()
+	local z = inv:get_stack("main", 3):get_count()
+	local look_dir = player:get_look_dir()
+	local dir = {x=look_dir.x/math.abs(look_dir.x), y=1, z=look_dir.z/math.abs(look_dir.z)}
+	minetest.chat_send_player( player:get_player_name(), "  " .. material);
 	for ix = 0, x-1 do
 		for iy = 0, y-1 do
 			for iz = 0, z-1 do
 				local pos = add_3dx2(start, mul_3dx2(dir, {x=ix, y=iy, z=iz}))
-				if not replacer_homedecor_node_is_owned(pos, player) then
-					minetest.set_node(pos, {name = node_type})
-				end
+--				if not replacer_homedecor_node_is_owned(pos, player) then
+					minetest.set_node(pos, {name = material})
+--				end
 			end
 		end
 	end
@@ -52,9 +55,9 @@ minetest.register_tool("multiplacer:multiplacer", {
 		damage_groups = {fleshy=1},
 	},
 	on_use = function(itemstack, user, pointed_thing)
-		activate(user:get_player_name(), nil)
+		multiplacer.activate(user, nil, pointed_thing)
 	end,
 	on_place = function(itemstack, placer, pointed_thing)
-		activate(placer:get_player_name(), "air")
+		multiplacer.activate(placer, "air", pointed_thing)
 	end
 })
