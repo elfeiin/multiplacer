@@ -9,6 +9,9 @@ local mul_3dx2 = function(a,b)
 end
 
 multiplacer.activate = function(player, material, pointed_thing, mode)
+	if minetest.get_item_group(material, "liquid") > 0 then
+		return nil;
+	end
 	if( player == nil or pointed_thing == nil) then
 		return nil;
 	end
@@ -20,11 +23,14 @@ multiplacer.activate = function(player, material, pointed_thing, mode)
 	local stack = inv:get_stack("main", 1)
 	local material = material or (stack:is_known() and stack:get_name())
 	if not material then
-		return
+		return nil;
 	end
 	local x = stack:get_count()
 	local y = inv:get_stack("main", 2):get_count()
 	local z = inv:get_stack("main", 3):get_count()
+	if x*y*z > 9801 then
+		return nil;
+	end
 	local look_dir = player:get_look_dir()
 	local dir = {x=look_dir.x/math.abs(look_dir.x), y=1, z=look_dir.z/math.abs(look_dir.z)}
 	-- minetest.chat_send_player( player:get_player_name(), "  " .. material);
@@ -43,6 +49,7 @@ end
 minetest.register_tool("multiplacer:multiplacer", {
 	description = "Placer Tool",
 	inventory_image = "multiplacer_multiplacer.png",
+	liquids_pointable = true
 	tool_capabilities = {
 		full_punch_interval = 0.9,
 		max_drop_level = 0,
@@ -55,9 +62,9 @@ minetest.register_tool("multiplacer:multiplacer", {
 		damage_groups = {fleshy=1},
 	},
 	on_use = function(itemstack, user, pointed_thing)
-		multiplacer.activate(user, nil, pointed_thing, 0)
+		multiplacer.activate(user, "air", pointed_thing, above)
 	end,
 	on_place = function(itemstack, placer, pointed_thing)
-		multiplacer.activate(placer, "air", pointed_thing, above)
+		multiplacer.activate(placer, nil, pointed_thing, 0)
 	end
 })
