@@ -32,7 +32,7 @@ multiplacer.activate = function(player, material, pointed_thing, mode)
 		for iy = 0, y-1 do
 			for iz = 0, z-1 do
 				local pos = add_3dx2(start, mul_3dx2(dir, {x=ix, y=iy, z=iz}))
-				if not minetest.is_protected(pos) then
+				if not minetest.is_protected(pos, player:get_player_name()) then
 					minetest.set_node(pos, {name = material})
 				end
 			end
