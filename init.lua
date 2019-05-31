@@ -8,14 +8,14 @@ local mul_3dx2 = function(a,b)
 	return {x=a.x*b.x,y=a.y*b.y,z=a.z*b.z}
 end
 
-multiplacer.activate = function(player, material, pointed_thing)
+multiplacer.activate = function(player, material, pointed_thing, mode)
 	if( player == nil or pointed_thing == nil) then
 		return nil;
 	end
 	if( pointed_thing.type ~= "node" ) then
 		return nil;
 	end
-	local start = minetest.get_pointed_thing_position( pointed_thing, above );
+	local start = minetest.get_pointed_thing_position( pointed_thing, mode );
 	local inv = player:get_inventory()
 	local stack = inv:get_stack("main", 1)
 	local material = material or (stack:is_known() and stack:get_name())
@@ -55,9 +55,9 @@ minetest.register_tool("multiplacer:multiplacer", {
 		damage_groups = {fleshy=1},
 	},
 	on_use = function(itemstack, user, pointed_thing)
-		multiplacer.activate(user, nil, pointed_thing)
+		multiplacer.activate(user, nil, pointed_thing, 0)
 	end,
 	on_place = function(itemstack, placer, pointed_thing)
-		multiplacer.activate(placer, "air", pointed_thing)
+		multiplacer.activate(placer, "air", pointed_thing, above)
 	end
 })
