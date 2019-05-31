@@ -39,7 +39,7 @@ end
 
 minetest.register_tool("multiplacer:multiplacer", {
 	description = "Placer Tool",
-	inventory_image = "multiplacer:multiplacer.png",
+	inventory_image = "multiplacer_multiplacer.png",
 	tool_capabilities = {
 		full_punch_interval = 0.9,
 		max_drop_level = 0,
