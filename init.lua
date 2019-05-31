@@ -32,9 +32,9 @@ multiplacer.activate = function(player, material, pointed_thing, mode)
 		for iy = 0, y-1 do
 			for iz = 0, z-1 do
 				local pos = add_3dx2(start, mul_3dx2(dir, {x=ix, y=iy, z=iz}))
---				if not replacer_homedecor_node_is_owned(pos, player) then
+				if not minetest.is_protected(pos) then
 					minetest.set_node(pos, {name = material})
---				end
+				end
 			end
 		end
 	end
