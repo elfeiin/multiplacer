@@ -58,6 +58,6 @@ minetest.register_tool("multiplacer:multiplacer", {
 		multiplacer.activate(user, nil, pointed_thing, 0)
 	end,
 	on_place = function(itemstack, placer, pointed_thing)
-		multiplacer.activate(placer, "air", pointed_thing, above)
+		multiplacer.activate(placer, "air", pointed_thing, 0)
 	end
 })
