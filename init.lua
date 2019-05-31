@@ -9,12 +9,7 @@ local mul_3dx2 = function(a,b)
 end
 
 multiplacer.activate = function(player, material, pointed_thing, mode)
-	if minetest.get_item_group(material, "liquid") > 0 then
-		return nil;
-	end
-	-- if minetest.get_draw_type(material, "liquid") then
-	-- 	return nil;
-	-- end
+
 	if( player == nil or pointed_thing == nil) then
 		return nil;
 	end
@@ -28,6 +23,10 @@ multiplacer.activate = function(player, material, pointed_thing, mode)
 	if not material then
 		return nil;
 	end
+	-- minetest.chat_send_player( player:get_player_name(), dump(minetest.get_item_group(material, "liquid")));
+	if minetest.get_item_group(material, "liquid") > 0 then
+		return nil;
+	end
 	local x = stack:get_count()
 	local y = inv:get_stack("main", 2):get_count()
 	local z = inv:get_stack("main", 3):get_count()
@@ -35,8 +34,7 @@ multiplacer.activate = function(player, material, pointed_thing, mode)
 		return nil;
 	end
 	local look_dir = player:get_look_dir()
-	local dir = {x=look_dir.x/math.abs(look_dir.x), y=1, z=look_dir.z/math.abs(look_dir.z)}
-	-- minetest.chat_send_player( player:get_player_name(), "  " .. material);
+	local dir = {x=look_dir.x/math.abs(look_dir.x), y=look_dir.y/math.abs(look_dir.y), z=look_dir.z/math.abs(look_dir.z)}
 	for ix = 0, x-1 do
 		for iy = 0, y-1 do
 			for iz = 0, z-1 do
