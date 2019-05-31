@@ -23,8 +23,8 @@ multiplacer.activate = function(player, material, pointed_thing, mode)
 	if not material then
 		return nil;
 	end
-	-- minetest.chat_send_player( player:get_player_name(), dump(minetest.get_item_group(material, "liquid")));
 	if minetest.get_item_group(material, "liquid") > 0 then
+		minetest.chat_send_player( player:get_player_name(), "Cannot place liquids.");
 		return nil;
 	end
 	local x = stack:get_count()
@@ -33,12 +33,15 @@ multiplacer.activate = function(player, material, pointed_thing, mode)
 	if x*y*z > 9801 then
 		return nil;
 	end
-	local look_dir = player:get_look_dir()
-	local dir = {x=look_dir.x/math.abs(look_dir.x), y=look_dir.y/math.abs(look_dir.y), z=look_dir.z/math.abs(look_dir.z)}
+	-- local look_dir = player:get_look_dir()
+	local yaw = player:get_look_horizontal() + math.pi/2
+	-- local dir = {x=look_dir.x/math.abs(look_dir.x), y=look_dir.y/math.abs(look_dir.y), z=look_dir.z/math.abs(look_dir.z)}
+	-- local dir = look_dir
 	for ix = 0, x-1 do
 		for iy = 0, y-1 do
 			for iz = 0, z-1 do
-				local pos = add_3dx2(start, mul_3dx2(dir, {x=ix, y=iy, z=iz}))
+				-- local pos = add_3dx2(start, mul_3dx2(dir, {x=ix, y=iy, z=iz}))
+				local pos = add_3dx2(start, {x=ix*math.cos(yaw)-iz*math.sin(yaw), y=iy, z=ix*math.sin(yaw)+iz*math.cos(yaw)})
 				if not minetest.is_protected(pos, player:get_player_name()) then
 					minetest.set_node(pos, {name = material})
 				end
