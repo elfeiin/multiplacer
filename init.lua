@@ -27,12 +27,12 @@ multiplacer.activate = function(player, material, pointed_thing, mode)
 	local z = inv:get_stack("main", 3):get_count()
 	local look_dir = player:get_look_dir()
 	local dir = {x=look_dir.x/math.abs(look_dir.x), y=1, z=look_dir.z/math.abs(look_dir.z)}
-	minetest.chat_send_player( player:get_player_name(), "  " .. material);
+	-- minetest.chat_send_player( player:get_player_name(), "  " .. material);
 	for ix = 0, x-1 do
 		for iy = 0, y-1 do
 			for iz = 0, z-1 do
 				local pos = add_3dx2(start, mul_3dx2(dir, {x=ix, y=iy, z=iz}))
-				if not minetest.is_protected(pos, player:get_player_name()) then
+				if not minetest.is_protected(pos) then
 					minetest.set_node(pos, {name = material})
 				end
 			end
@@ -58,6 +58,6 @@ minetest.register_tool("multiplacer:multiplacer", {
 		multiplacer.activate(user, nil, pointed_thing, 0)
 	end,
 	on_place = function(itemstack, placer, pointed_thing)
-		multiplacer.activate(placer, "air", pointed_thing, 0)
+		multiplacer.activate(placer, "air", pointed_thing, above)
 	end
 })
