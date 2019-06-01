@@ -75,6 +75,9 @@ multiplacer.activate = function(itemstack, player, delete, pointed_thing, mode1,
 				-- 	pos = add_3dx2(start, {x=iw*look_dir.x,y=ih,z=il*look_dir.z})
 				-- end
 				if not minetest.is_protected(pos, player:get_player_name()) then
+					if not areas then
+						return nil;
+					end
 					if #areas:getNodeOwners(pos) > 0 then
 						if delete then
 							if minetest.get_node(pos).name == daten[1] then
