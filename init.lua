@@ -75,12 +75,14 @@ multiplacer.activate = function(itemstack, player, delete, pointed_thing, mode1,
 				-- 	pos = add_3dx2(start, {x=iw*look_dir.x,y=ih,z=il*look_dir.z})
 				-- end
 				if not minetest.is_protected(pos, player:get_player_name()) then
-					if delete then
-						if minetest.get_node(pos).name == daten[1] then
-							minetest.set_node(pos, {name = "air"});
+					if #areas:getNodeOwners(pos) > 0 then
+						if delete then
+							if minetest.get_node(pos).name == daten[1] then
+								minetest.set_node(pos, {name = "air"});
+							end
+						else
+							minetest.add_node( pos, { name = daten[1], param1 = daten[2], param2 = daten[3] } );
 						end
-					else
-						minetest.add_node( pos, { name = daten[1], param1 = daten[2], param2 = daten[3] } );
 					end
 				end
 			end
@@ -135,6 +137,11 @@ end
 -- 	end
 -- })
 
+minetest.register_privilege("multiplacer", {
+	description = "Can use the multiplacer tool",
+	give_to_single_player = true
+})
+
 minetest.register_tool("multiplacer:axis_placer", {
 	description = "Placer Tool",
 	inventory_image = "multiplacer_axis_placer.png",
@@ -154,6 +161,12 @@ minetest.register_tool("multiplacer:axis_placer", {
 		multiplacer.activate(itemstack, user, true, pointed_thing, above, true)
 	end,
 	on_place = function(itemstack, placer, pointed_thing)
+		
+		local has, missing = minetest.check_player_privs(placer, {multiplacer = true})
+		if not has then
+			minetest.chat_send_player( player:get_player_name(), "Hey! You can't use this tool because you do not have the \"multiplacer\" privilege.");
+		end
+		
 		local name = placer:get_player_name()
 		local keys = placer:get_player_control()
 		if not keys["sneak"] then
