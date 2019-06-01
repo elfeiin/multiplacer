@@ -76,9 +76,14 @@ multiplacer.activate = function(itemstack, player, delete, pointed_thing, mode1,
 				-- end
 				if not minetest.is_protected(pos, player:get_player_name()) then
 					if not areas then
-						return nil;
-					end
-					if #areas:getNodeOwners(pos) > 0 then
+						if delete then
+							if minetest.get_node(pos).name == daten[1] then
+								minetest.set_node(pos, {name = "air"});
+							end
+						else
+							minetest.add_node( pos, { name = daten[1], param1 = daten[2], param2 = daten[3] } );
+						end
+					elseif #areas:getNodeOwners(pos) > 0 then
 						if delete then
 							if minetest.get_node(pos).name == daten[1] then
 								minetest.set_node(pos, {name = "air"});
