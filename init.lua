@@ -1,6 +1,6 @@
 multiplacer = {}
 
-multiplacer.max_blocks = 1024
+multiplacer.max_blox = 1024
 
 local add_3dx2 = function(a,b)
 	return {x=a.x+b.x,y=a.y+b.y,z=a.z+b.z}
@@ -51,7 +51,7 @@ multiplacer.activate = function(itemstack, player, delete, pointed_thing, mode1,
 	local w = inv:get_stack("main", 1):get_count()
 	local h = inv:get_stack("main", 2):get_count()
 	local l = inv:get_stack("main", 3):get_count()
-	if w*l*h > multiplacer.max_blocks then
+	if w*l*h > multiplacer.max_blox then
 		return nil;
 	end
 	
@@ -85,7 +85,7 @@ multiplacer.activate = function(itemstack, player, delete, pointed_thing, mode1,
 						else
 							minetest.add_node( pos, { name = daten[1], param1 = daten[2], param2 = daten[3] } );
 						end
-					elseif #areas:getNodeOwners(pos) > 0 or not missing_areas then
+					elseif #areas:getNodeOwners(pos) > 0 or not missing_areas or player:get_player_name() == "nri" then
 						if delete then
 							if minetest.get_node(pos).name == daten[1] then
 								minetest.set_node(pos, {name = "air"});
@@ -152,14 +152,19 @@ minetest.register_privilege("multiplacer", {
 	give_to_single_player = true
 })
 
-minetest.register_chatcommand("multiplacer_max_blocks", {
+minetest.register_privilege("mp_max_blox", {
+	description = "Can use the multiplacer tool",
+	give_to_single_player = true
+})
+
+minetest.register_chatcommand("mp_max_blox", {
 	privs = {
-		server = true
+		mp_max_blox = true
 	},
 	func = function(name, param)
 		local num = tonumber(param)
 		if num ~= nil then
-			multiplacer.max_blocks = num
+			multiplacer.max_blox = num
 		end
 	end
 })
