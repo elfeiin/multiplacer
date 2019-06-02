@@ -2,3 +2,5 @@ The first three inventory slots determine how this tool behaves.
 Slot one, two and three determine X, Y and Z dimensions, respectively.
 Shift + right click on a block to select that material.
 Left-clicking places nodes, right-clicking removes nodes.
+This mod adds the multiplacer and mp_max_blox privs, the latter
+of which allows a player to adjust the maximum number of blocks that can be placed at once.
