@@ -1,3 +1,5 @@
+max_blocks = 1024
+
 multiplacer = {}
 
 local add_3dx2 = function(a,b)
@@ -12,7 +14,7 @@ local mul_3dx2 = function(a,b)
 	return {x=a.x*b.x,y=a.y*b.y,z=a.z*b.z}
 end
 
-multiplacer.activate = function(itemstack, player, delete, pointed_thing, mode1, on_axis)
+multiplacer.activate = function(itemstack, player, delete, pointed_thing, mode1, on_axis, missing_areas)
 
 	if( player == nil or pointed_thing == nil) then
 		return nil;
@@ -49,7 +51,7 @@ multiplacer.activate = function(itemstack, player, delete, pointed_thing, mode1,
 	local w = inv:get_stack("main", 1):get_count()
 	local h = inv:get_stack("main", 2):get_count()
 	local l = inv:get_stack("main", 3):get_count()
-	if w*l*h > 9801 then
+	if w*l*h > max_blocks then
 		return nil;
 	end
 	
@@ -83,7 +85,7 @@ multiplacer.activate = function(itemstack, player, delete, pointed_thing, mode1,
 						else
 							minetest.add_node( pos, { name = daten[1], param1 = daten[2], param2 = daten[3] } );
 						end
-					elseif #areas:getNodeOwners(pos) > 0 then
+					elseif #areas:getNodeOwners(pos) > 0 or not missing_areas then
 						if delete then
 							if minetest.get_node(pos).name == daten[1] then
 								minetest.set_node(pos, {name = "air"});
@@ -166,19 +168,21 @@ minetest.register_tool("multiplacer:axis_placer", {
 		damage_groups = {fleshy=1},
 	},
 	on_use = function(itemstack, user, pointed_thing)
-		multiplacer.activate(itemstack, user, true, pointed_thing, above, true)
+		multiplacer.activate(itemstack, user, true, pointed_thing, above, true, missing["areas"])
 	end,
 	on_place = function(itemstack, placer, pointed_thing)
 		
-		local has, missing = minetest.check_player_privs(placer, {multiplacer = true})
+		local has, missing = minetest.check_player_privs(placer, {multiplacer = true, areas = true})
 		if not has then
-			minetest.chat_send_player( player:get_player_name(), "Hey! You can't use this tool because you do not have the \"multiplacer\" privilege.");
+			if missing["multiplacer"] then
+				minetest.chat_send_player( player:get_player_name(), "Hey! You can't use this tool because you do not have the \"multiplacer\" privilege.");
+			end
 		end
 		
 		local name = placer:get_player_name()
 		local keys = placer:get_player_control()
 		if not keys["sneak"] then
-			return multiplacer.activate(itemstack, placer, false, pointed_thing, 0, true)
+			return multiplacer.activate(itemstack, placer, false, pointed_thing, 0, true, missing["areas"])
 		end
 		
 		-- credit to sokomine
