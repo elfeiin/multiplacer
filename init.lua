@@ -1,6 +1,6 @@
-max_blocks = 1024
-
 multiplacer = {}
+
+multiplacer.max_blocks = 1024
 
 local add_3dx2 = function(a,b)
 	return {x=a.x+b.x,y=a.y+b.y,z=a.z+b.z}
@@ -51,7 +51,7 @@ multiplacer.activate = function(itemstack, player, delete, pointed_thing, mode1,
 	local w = inv:get_stack("main", 1):get_count()
 	local h = inv:get_stack("main", 2):get_count()
 	local l = inv:get_stack("main", 3):get_count()
-	if w*l*h > max_blocks then
+	if w*l*h > multiplacer.max_blocks then
 		return nil;
 	end
 	
@@ -152,8 +152,20 @@ minetest.register_privilege("multiplacer", {
 	give_to_single_player = true
 })
 
+minetest.register_chatcommand("multiplacer_max_blocks", {
+	privs = {
+		server = true
+	},
+	func = function(name, param)
+		local num = tonumber(param)
+		if num ~= nil then
+			multiplacer.max_blocks = num
+		end
+	end
+})
+
 minetest.register_tool("multiplacer:axis_placer", {
-	description = "Placer Tool",
+	description = "Axis Placer",
 	inventory_image = "multiplacer_axis_placer.png",
 	liquids_pointable = true,
 	tool_capabilities = {
