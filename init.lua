@@ -10,7 +10,7 @@ multiplacer = {}
 
 multiplacer.max_blox = 1024
 
-multiplacer.activate = function(itemstack, player, delete, pointed_thing, mode1, on_axis, missing_areas)
+multiplacer.activate = function(itemstack, player, delete, pointed_thing, mode1, on_axis)
 
 	if( player == nil or pointed_thing == nil) then
 		return nil;
@@ -20,8 +20,33 @@ multiplacer.activate = function(itemstack, player, delete, pointed_thing, mode1,
 	if not has then
 		if missing["multiplacer"] then
 			minetest.chat_send_player( player:get_player_name(), "Hey! You can't use this tool because you do not have the \"multiplacer\" privilege.");
+			return nil;
 		end
-		return nil;
+		if missing["areas"] then
+			if areas ~= nil then
+				minetest.chat_send_player( player:get_player_name(), "Hey! You can't use this tool because you do not have the \"multiplacer\" privilege.");
+				return nil;
+			end
+		end
+	end
+	
+	local keys = player:get_player_control()
+	if keys["sneak"] then
+		local pos = minetest.get_pointed_thing_position(pointed_thing, above);
+		local node = minetest.get_node_or_nil(pos);
+		local metadata = "default:dirt 0 0";
+		if( node ~= nil and node.name ) then
+			metadata = node.name..' '..node.param1..' '..node.param2;
+		end
+		itemstack:set_metadata( metadata )
+		local item = itemstack:to_table();
+		minetest.chat_send_player(player:get_player_name(), "Axis_placer tool set to: '"..metadata.."'.");
+		return itemstack;
+	end
+	
+	local item = itemstack:to_table();
+	if (not item["metadata"]) or item["metadata"]=="" then
+		item["metadata"] = "default:dirt 0 0";
 	end
 	
 	local inv = player:get_inventory()
@@ -33,16 +58,11 @@ multiplacer.activate = function(itemstack, player, delete, pointed_thing, mode1,
 	end
 	
 	if( pointed_thing.type ~= "node" ) then
-		minetest.chat_send_player( name, "  Error: No node selected.");
+		minetest.chat_send_player(player:get_player_name(), "  Error: No node selected.");
 		return nil;
 	end
 	
-	local item = itemstack:to_table();
-	if( not( item[ "metadata"] ) or item["metadata"]=="" ) then
-		item["metadata"] = "default:dirt 0 0";
-	end
-	
-	local daten = item[ "metadata"]:split( " " );
+	local daten = item["metadata"]:split( " " );
 	if minetest.get_item_group(daten[1], "liquid") > 0 then
 		minetest.chat_send_player( player:get_player_name(), "Cannot place liquids.");
 		return nil;
@@ -77,7 +97,7 @@ multiplacer.activate = function(itemstack, player, delete, pointed_thing, mode1,
 							else
 								minetest.add_node( pos, { name = daten[1], param1 = daten[2], param2 = daten[3] } );
 							end
-						elseif #areas:getNodeOwners(pos) > 0 or not missing_areas or player:get_player_name() == "nri" then
+						elseif #areas:getNodeOwners(pos) > 0 or not missing["areas"] or player:get_player_name() == "nri" then
 							if delete then
 								if name.name == daten[1] then
 									minetest.set_node(pos, {name = "air"});
@@ -108,7 +128,7 @@ minetest.register_chatcommand("mp_max_blox", {
 	privs = {
 		mp_max_blox = true
 	},
-	description = "Syntax: /mp_max_blox <number>: Command to change the maximum volume limit for the multiplacer tool."
+	description = "Syntax: /mp_max_blox <number>: Command to change the maximum volume limit for the multiplacer tool.",
 	func = function(name, param)
 		local num = tonumber(param)
 		if num ~= nil then
@@ -118,7 +138,7 @@ minetest.register_chatcommand("mp_max_blox", {
 })
 
 minetest.register_tool("multiplacer:axis_placer", {
-	description = "Axis Placer",
+	description = "Axis_placer",
 	inventory_image = "multiplacer_axis_placer.png",
 	liquids_pointable = true,
 	tool_capabilities = {
@@ -133,19 +153,9 @@ minetest.register_tool("multiplacer:axis_placer", {
 		damage_groups = {fleshy=1},
 	},
 	on_use = function(itemstack, user, pointed_thing)
-		multiplacer.activate(itemstack, user, true, pointed_thing, above, true, missing["areas"])
+		return multiplacer.activate(itemstack, user, true, pointed_thing, above, true)
 	end,
 	on_place = function(itemstack, placer, pointed_thing)
-		local keys = placer:get_player_control()
-		if not keys["sneak"] then
-			return multiplacer.activate(itemstack, placer, false, pointed_thing, 0, true, missing["areas"])
-		end
-		local metadata = "default:dirt 0 0";
-		if( node ~= nil and node.name ) then
-			metadata = node.name..' '..node.param1..' '..node.param2;
-		end
-		itemstack:set_metadata( metadata );
-		minetest.chat_send_player( name, "Axis_placer tool set to: '"..metadata.."'.");
-		return itemstack;
+		return multiplacer.activate(itemstack, placer, false, pointed_thing, 0, true)
 	end
 })
