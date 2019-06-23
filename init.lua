@@ -10,43 +10,37 @@ multiplacer = {}
 
 multiplacer.max_blox = 1024
 
-multiplacer.activate = function(itemstack, player, delete, pointed_thing, mode1, on_axis)
-
+multiplacer.activate = function(stack, player, pointed_thing, mode)
 	if( player == nil or pointed_thing == nil) then
 		return nil;
 	end
 	
-	local has, missing = minetest.check_player_privs(player, {multiplacer = true, areas = true})
+	local has, missing = minetest.check_player_privs(player, {multiplacer = true})
 	if not has then
 		if missing["multiplacer"] then
 			minetest.chat_send_player( player:get_player_name(), "Hey! You can't use this tool because you do not have the \"multiplacer\" privilege.");
 			return nil;
 		end
-		if missing["areas"] then
-			if areas ~= nil then
-				minetest.chat_send_player( player:get_player_name(), "Hey! You can't use this tool because you do not have the \"multiplacer\" privilege.");
-				return nil;
-			end
-		end
 	end
 	
-	local keys = player:get_player_control()
-	if keys["sneak"] then
-		local pos = minetest.get_pointed_thing_position(pointed_thing, above);
-		local node = minetest.get_node_or_nil(pos);
-		local metadata = "default:dirt 0 0";
-		if( node ~= nil and node.name ) then
-			metadata = node.name..' '..node.param1..' '..node.param2;
-		end
-		itemstack:set_metadata( metadata )
-		local item = itemstack:to_table();
-		minetest.chat_send_player(player:get_player_name(), "Axis_placer tool set to: '"..metadata.."'.");
-		return itemstack;
+	local meta = stack:get_meta():to_table();
+	local to_delete = meta["fields"]["multiplacer:delete"];
+	local to_place = meta["fields"]["multiplacer:place"];
+	if not to_delete or to_delete == "" then
+		to_delete = "default:air 0 0"
 	end
-	
-	local item = itemstack:to_table();
-	if (not item["metadata"]) or item["metadata"]=="" then
-		item["metadata"] = "default:dirt 0 0";
+	if not to_place or to_place == "" then
+		to_place = "default:dirt 0 0"
+	end
+	to_delete = to_delete:split(" ");
+	if( #to_delete < 3 ) then
+		to_delete[2] = 0;
+		to_delete[3] = 0;
+	end
+	to_place = to_place:split(" ");
+	if( #to_place < 3 ) then
+		to_place[2] = 0;
+		to_place[3] = 0;
 	end
 	
 	local inv = player:get_inventory()
@@ -62,21 +56,10 @@ multiplacer.activate = function(itemstack, player, delete, pointed_thing, mode1,
 		return nil;
 	end
 	
-	local daten = item["metadata"]:split( " " );
-	if minetest.get_item_group(daten[1], "liquid") > 0 then
-		minetest.chat_send_player( player:get_player_name(), "Cannot place liquids.");
-		return nil;
-	end
-	
-	if( #daten < 3 ) then
-		daten[2] = 0;
-		daten[3] = 0;
-	end
-	
 	local pos
 	local look_dir = player:get_look_dir()
 	local yaw = player:get_look_horizontal()
-	local start = minetest.get_pointed_thing_position(pointed_thing, mode1);
+	local start = minetest.get_pointed_thing_position(pointed_thing, mode);
 	local axis_dir = {x=look_dir.x/math.abs(look_dir.x),y=-look_dir.y/math.abs(look_dir.y),z=look_dir.z/math.abs(look_dir.z)}
 	for iw = 0, w-1 do
 		for ih = 0, h-1 do
@@ -87,24 +70,10 @@ multiplacer.activate = function(itemstack, player, delete, pointed_thing, mode1,
 					pos = add_3dx2(start, mul_3dx2(axis_dir, {x=iw, y=ih, z=il}))
 				end
 				local node = minetest.get_node_or_nil(pos)
-				if node ~= nil then
-					if not minetest.is_protected(pos, player:get_player_name()) then
-						if not areas then
-							if delete then
-								if node.name == daten[1] then
-									minetest.set_node(pos, {name = "air"});
-								end
-							else
-								minetest.add_node( pos, { name = daten[1], param1 = daten[2], param2 = daten[3] } );
-							end
-						elseif #areas:getNodeOwners(pos) > 0 or not missing["areas"] or player:get_player_name() == "nri" then
-							if delete then
-								if name.name == daten[1] then
-									minetest.set_node(pos, {name = "air"});
-								end
-							elseif node.name == "air" then
-								minetest.add_node( pos, { name = daten[1], param1 = daten[2], param2 = daten[3] } );
-							end
+				if not minetest.is_protected(pos, player:get_player_name()) then
+					if node ~= nil then
+						if node.name == to_delete[1] then --and node.param1 == to_delete[2] and node.param2 == to_delete[3]
+							minetest.swap_node( pos, { name = to_place[1], param1 = to_place[2], param2 = to_place[3] } );
 						end
 					end
 				end
@@ -115,32 +84,14 @@ multiplacer.activate = function(itemstack, player, delete, pointed_thing, mode1,
 end
 
 minetest.register_privilege("multiplacer", {
-	description = "Can use the multiplacer tool",
+	description = "Can use the multiplacer tools",
 	give_to_single_player = true
 })
 
-minetest.register_privilege("mp_max_blox", {
-	description = "Can use the multiplacer tool",
-	give_to_single_player = true
-})
-
-minetest.register_chatcommand("mp_max_blox", {
-	privs = {
-		mp_max_blox = true
-	},
-	description = "Syntax: /mp_max_blox <number>: Command to change the maximum volume limit for the multiplacer tool.",
-	func = function(name, param)
-		local num = tonumber(param)
-		if num ~= nil then
-			multiplacer.max_blox = num
-		end
-	end
-})
-
-minetest.register_tool("multiplacer:axis_placer", {
-	description = "Axis_placer",
-	inventory_image = "multiplacer_axis_placer.png",
-	liquids_pointable = true,
+minetest.register_tool("multiplacer:multiplacer", {
+	description = "multiplacer",
+	inventory_image = "multiplacer_multiplacer.png",
+	liquids_pointable = false,
 	tool_capabilities = {
 		full_punch_interval = 0.9,
 		max_drop_level = 0,
@@ -152,10 +103,42 @@ minetest.register_tool("multiplacer:axis_placer", {
 		},
 		damage_groups = {fleshy=1},
 	},
-	on_use = function(itemstack, user, pointed_thing)
-		return multiplacer.activate(itemstack, user, true, pointed_thing, above, true)
+	on_place = function(stack, player, pointed_thing)
+		local keys = player:get_player_control()
+		if keys["sneak"] then
+			local pos = minetest.get_pointed_thing_position(pointed_thing, false);
+			local node;
+			if pointed_thing.type == "node" then
+				node = minetest.get_node_or_nil(pos);
+			end
+			local block = "air"..' '.."0"..' '.."0";
+			if( node ~= nil and node.name ) then
+				block = node.name..' '..node.param1..' '..node.param2;
+			end
+			local meta = stack:get_meta();
+			meta:set_string("multiplacer:place", block);
+			minetest.chat_send_player(player:get_player_name(), "Multibreaker tool set to place '"..((node and node.name) or "default:air").."' blocks.");
+			return stack;
+		end
+		return multiplacer.activate(stack, player, pointed_thing, true);
 	end,
-	on_place = function(itemstack, placer, pointed_thing)
-		return multiplacer.activate(itemstack, placer, false, pointed_thing, 0, true)
-	end
+	on_use = function(stack, player, pointed_thing)
+		local keys = player:get_player_control()
+		if keys["sneak"] then
+			local pos = minetest.get_pointed_thing_position(pointed_thing, false);
+			local node;
+			if pointed_thing.type == "node" then
+				node = minetest.get_node_or_nil(pos);
+			end
+			local block = "air"..' '.."0"..' '.."0";
+			if( node ~= nil and node.name ) then
+				block = node.name..' '..node.param1..' '..node.param2;
+			end
+			local meta = stack:get_meta();
+			meta:set_string("multiplacer:delete", block);
+			minetest.chat_send_player(player:get_player_name(), "Multibreaker tool set to delete '"..((node and node.name) or "default:air").."' blocks.");
+			return stack;
+		end
+		return multiplacer.activate(stack, player, pointed_thing, false);
+	end,
 })
