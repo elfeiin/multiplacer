@@ -8,7 +8,7 @@ end
 
 multiplacer = {}
 
-multiplacer.max_blox = 1024
+multiplacer.max_blocks = 1024
 
 multiplacer.activate = function(stack, player, pointed_thing, mode)
 	if( player == nil or pointed_thing == nil) then
@@ -43,13 +43,11 @@ multiplacer.activate = function(stack, player, pointed_thing, mode)
 		to_place[3] = 0;
 	end
 	
-	local inv = player:get_inventory()
-	local w = inv:get_stack("main", 1):get_count()
-	local h = inv:get_stack("main", 2):get_count()
-	local l = inv:get_stack("main", 3):get_count()
-	if w*l*h > multiplacer.max_blox then
-		return nil;
-	end
+	local inv = player:get_inventory();
+	local w = inv:get_stack("main", 1):get_count();
+	local h = inv:get_stack("main", 2):get_count();
+	local l = inv:get_stack("main", 3):get_count();
+	local blocks_placed = 0;
 	
 	if( pointed_thing.type ~= "node" ) then
 		minetest.chat_send_player(player:get_player_name(), "  Error: No node selected.");
@@ -73,14 +71,31 @@ multiplacer.activate = function(stack, player, pointed_thing, mode)
 				if not minetest.is_protected(pos, player:get_player_name()) then
 					if node ~= nil then
 						if node.name == to_delete[1] then --and node.param1 == to_delete[2] and node.param2 == to_delete[3]
-							minetest.swap_node( pos, { name = to_place[1], param1 = to_place[2], param2 = to_place[3] } );
+							minetest.set_node( pos, { name = to_place[1], param1 = to_place[2], param2 = to_place[3] } );
 						end
 					end
+				end
+				blocks_placed = blocks_placed + 1;
+				if blocks_placed > multiplacer.max_blocks then
+					return nil;
 				end
 			end
 		end
 	end
 	return nil;
+end
+
+multiplacer.get_node = function(stack, player, pointed_thing, mode)
+	local pos = minetest.get_pointed_thing_position(pointed_thing, false);
+	local node;
+	if pointed_thing.type == "node" then
+		node = minetest.get_node_or_nil(pos);
+	end
+	local block = "air"..' '.."0"..' '.."0";
+	if( node ~= nil and node.name ) then
+		block = node.name..' '..node.param1..' '..node.param2;
+	end
+	return block
 end
 
 minetest.register_privilege("multiplacer", {
@@ -91,7 +106,7 @@ minetest.register_privilege("multiplacer", {
 minetest.register_tool("multiplacer:multiplacer", {
 	description = "multiplacer",
 	inventory_image = "multiplacer_multiplacer.png",
-	liquids_pointable = false,
+	liquids_pointable = true,
 	tool_capabilities = {
 		full_punch_interval = 0.9,
 		max_drop_level = 0,
@@ -103,40 +118,34 @@ minetest.register_tool("multiplacer:multiplacer", {
 		},
 		damage_groups = {fleshy=1},
 	},
-	on_place = function(stack, player, pointed_thing)
+	on_secondary_use = function(stack, player, pointed_thing)
 		local keys = player:get_player_control()
-		if keys["sneak"] then
-			local pos = minetest.get_pointed_thing_position(pointed_thing, false);
-			local node;
-			if pointed_thing.type == "node" then
-				node = minetest.get_node_or_nil(pos);
-			end
-			local block = "air"..' '.."0"..' '.."0";
-			if( node ~= nil and node.name ) then
-				block = node.name..' '..node.param1..' '..node.param2;
-			end
+		if keys["aux1"] then
+			local block = multiplacer.get_node(stack, player, pointed_thing, true)
 			local meta = stack:get_meta();
 			meta:set_string("multiplacer:place", block);
-			minetest.chat_send_player(player:get_player_name(), "Multibreaker tool set to place '"..((node and node.name) or "default:air").."' blocks.");
+			minetest.chat_send_player(player:get_player_name(), "Multiplacer tool set to place '"..block.."' blocks.");
+			return stack;
+		end
+	end,
+	on_place = function(stack, player, pointed_thing)
+		local keys = player:get_player_control()
+		if keys["aux1"] then
+			local block = multiplacer.get_node(stack, player, pointed_thing, true)
+			local meta = stack:get_meta();
+			meta:set_string("multiplacer:place", block);
+			minetest.chat_send_player(player:get_player_name(), "Multiplacer tool set to place '"..block.."' blocks.");
 			return stack;
 		end
 		return multiplacer.activate(stack, player, pointed_thing, true);
 	end,
 	on_use = function(stack, player, pointed_thing)
 		local keys = player:get_player_control()
-		if keys["sneak"] then
-			local pos = minetest.get_pointed_thing_position(pointed_thing, false);
-			local node;
-			if pointed_thing.type == "node" then
-				node = minetest.get_node_or_nil(pos);
-			end
-			local block = "air"..' '.."0"..' '.."0";
-			if( node ~= nil and node.name ) then
-				block = node.name..' '..node.param1..' '..node.param2;
-			end
+		if keys["aux1"] then
+			local block = multiplacer.get_node(stack, player, pointed_thing, true)
 			local meta = stack:get_meta();
 			meta:set_string("multiplacer:delete", block);
-			minetest.chat_send_player(player:get_player_name(), "Multibreaker tool set to delete '"..((node and node.name) or "default:air").."' blocks.");
+			minetest.chat_send_player(player:get_player_name(), "Multiplacer tool set to delete '"..block.."' blocks.");
 			return stack;
 		end
 		return multiplacer.activate(stack, player, pointed_thing, false);
