@@ -58,9 +58,9 @@ multiplacer.activate = function(stack, player, pointed_thing, mode)
 	local look_dir = player:get_look_dir()
 	local yaw = player:get_look_horizontal()
 	local start = minetest.get_pointed_thing_position(pointed_thing, mode);
-	local axis_dir = {x=look_dir.x/math.abs(look_dir.x),y=-look_dir.y/math.abs(look_dir.y),z=look_dir.z/math.abs(look_dir.z)}
-	for iw = 0, w-1 do
-		for ih = 0, h-1 do
+	local axis_dir = {x=look_dir.x/math.abs(look_dir.x),y=1,z=look_dir.z/math.abs(look_dir.z)}
+	for ih = 0, h-1 do
+		for iw = 0, w-1 do
 			for il = 0, l-1 do
 				if yaw < math.pi/4 or yaw > 7*math.pi/4 or (yaw > 3*math.pi/4 and yaw < 5*math.pi/4) then
 					pos = add_3dx2(start, mul_3dx2(axis_dir, {x=il, y=ih, z=iw}))
@@ -85,7 +85,7 @@ multiplacer.activate = function(stack, player, pointed_thing, mode)
 	return nil;
 end
 
-multiplacer.get_node = function(stack, player, pointed_thing, mode)
+multiplacer.get_node = function(player, pointed_thing)
 	local pos = minetest.get_pointed_thing_position(pointed_thing, false);
 	local node;
 	if pointed_thing.type == "node" then
@@ -121,7 +121,7 @@ minetest.register_tool("multiplacer:multiplacer", {
 	on_secondary_use = function(stack, player, pointed_thing)
 		local keys = player:get_player_control()
 		if keys["aux1"] then
-			local block = multiplacer.get_node(stack, player, pointed_thing, true)
+			local block = multiplacer.get_node(player, pointed_thing)
 			local meta = stack:get_meta();
 			meta:set_string("multiplacer:place", block);
 			minetest.chat_send_player(player:get_player_name(), "Multiplacer tool set to place '"..block.."' blocks.");
@@ -131,7 +131,7 @@ minetest.register_tool("multiplacer:multiplacer", {
 	on_place = function(stack, player, pointed_thing)
 		local keys = player:get_player_control()
 		if keys["aux1"] then
-			local block = multiplacer.get_node(stack, player, pointed_thing, true)
+			local block = multiplacer.get_node(player, pointed_thing)
 			local meta = stack:get_meta();
 			meta:set_string("multiplacer:place", block);
 			minetest.chat_send_player(player:get_player_name(), "Multiplacer tool set to place '"..block.."' blocks.");
@@ -142,7 +142,7 @@ minetest.register_tool("multiplacer:multiplacer", {
 	on_use = function(stack, player, pointed_thing)
 		local keys = player:get_player_control()
 		if keys["aux1"] then
-			local block = multiplacer.get_node(stack, player, pointed_thing, true)
+			local block = multiplacer.get_node(player, pointed_thing)
 			local meta = stack:get_meta();
 			meta:set_string("multiplacer:delete", block);
 			minetest.chat_send_player(player:get_player_name(), "Multiplacer tool set to delete '"..block.."' blocks.");
