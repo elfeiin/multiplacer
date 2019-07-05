@@ -8,7 +8,7 @@ end
 
 multiplacer = {}
 
-multiplacer.max_blocks = 1024
+multiplacer.max_blocks = 0 --set to 0 for unlimited
 
 multiplacer.activate = function(stack, player, pointed_thing, mode)
 	if( player == nil or pointed_thing == nil) then
@@ -76,7 +76,7 @@ multiplacer.activate = function(stack, player, pointed_thing, mode)
 					end
 				end
 				blocks_placed = blocks_placed + 1;
-				if blocks_placed > multiplacer.max_blocks then
+				if blocks_placed > multiplacer.max_blocks and multiplacer.max_blocks ~= 0 then
 					return nil;
 				end
 			end
