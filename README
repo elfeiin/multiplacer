@@ -1,4 +1,0 @@
-The first three inventory slots determine how this tool behaves.
-Slot one, two and three determine X, Y and Z dimensions, respectively.
-Shift + Left click sets which nodes to replace, and Shift + Right click sets which nodes to replace it with. You can select air by clicking anywhere there isn't a block.
-Left-clicking replaces nodes, right-clicking adds nodes.
