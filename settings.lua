@@ -1,0 +1,1 @@
+multiplacer.max_blocks = 0 -- Sets the maximum number of blocks that will be placed. Set to 0 for unlimited.
