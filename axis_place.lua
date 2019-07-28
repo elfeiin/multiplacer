@@ -6,7 +6,7 @@ multiplacer.axis_place = function(stack, player, pointed_thing, mode)
 	local has, missing = minetest.check_player_privs(player, {multiplacer = true})
 	if not has then
 		if missing["multiplacer"] then
-			minetest.chat_send_player( player:get_player_name(), "Hey! You can't use this tool because you do not have the \"multiplacer\" privilege.");
+			multiplacer.print( player:get_player_name(), "Hey! You can't use this tool because you do not have the \"multiplacer\" privilege.");
 			return nil;
 		end
 	end
@@ -38,7 +38,7 @@ multiplacer.axis_place = function(stack, player, pointed_thing, mode)
 	local blocks_placed = 0;
 	
 	if( pointed_thing.type ~= "node" ) then
-		minetest.chat_send_player(player:get_player_name(), "  Error: No node selected.");
+		multiplacer.print(player:get_player_name(), "  Error: No node selected.");
 		return nil;
 	end
 	

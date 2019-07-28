@@ -5,6 +5,14 @@ dofile(minetest.get_modpath(minetest.get_current_modname()) .. "/basic_3d_math.l
 dofile(minetest.get_modpath(minetest.get_current_modname()) .. "/functions.lua");
 dofile(minetest.get_modpath(minetest.get_current_modname()) .. "/settings.lua");
 
+multiplacer.print = function(name, msg)
+	if multiplacer.output == "verbose" then
+		minetest.chat_send_player(name, msg);
+	else
+		multiplacer.output = "quiet"
+	end
+end
+
 minetest.register_privilege("multiplacer", {
 	description = "Can use the multiplacer tools",
 	give_to_single_player = true
@@ -31,7 +39,7 @@ minetest.register_tool("multiplacer:multiplacer", {
 			local block = multiplacer.get_node(player, pointed_thing)
 			local meta = stack:get_meta();
 			meta:set_string("multiplacer:place", block);
-			minetest.chat_send_player(player:get_player_name(), "Multiplacer tool set to place '"..block.."' blocks.");
+			multiplacer.print(player:get_player_name(), "Multiplacer tool set to place '"..block.."' blocks.");
 			return stack;
 		end
 	end,
@@ -41,7 +49,7 @@ minetest.register_tool("multiplacer:multiplacer", {
 			local block = multiplacer.get_node(player, pointed_thing)
 			local meta = stack:get_meta();
 			meta:set_string("multiplacer:place", block);
-			minetest.chat_send_player(player:get_player_name(), "Multiplacer tool set to place '"..block.."' blocks.");
+			multiplacer.print(player:get_player_name(), "Multiplacer tool set to place '"..block.."' blocks.");
 			return stack;
 		end
 		return multiplacer.axis_place(stack, player, pointed_thing, true);
@@ -52,7 +60,7 @@ minetest.register_tool("multiplacer:multiplacer", {
 			local block = multiplacer.get_node(player, pointed_thing)
 			local meta = stack:get_meta();
 			meta:set_string("multiplacer:delete", block);
-			minetest.chat_send_player(player:get_player_name(), "Multiplacer tool set to delete '"..block.."' blocks.");
+			multiplacer.print(player:get_player_name(), "Multiplacer tool set to delete '"..block.."' blocks.");
 			return stack;
 		end
 		return multiplacer.axis_place(stack, player, pointed_thing, false);
